@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Frank Abagnale – Spot the Mistake</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #e8e9ef;
+      --card: #f4f4f8;
+      --border: #c0c2cc;
+      --accent: #be8bf4;
+      --gold: #f5a623;
+      --text: #2d2d3a;
+      --muted: #7a7a90;
+      --correct: #2ecc71;
+      --wrong: #e74c3c;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Source Sans 3', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 36px 16px 48px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+      max-width: 580px;
+    }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    header p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .progress-wrap {
+      width: 100%;
+      max-width: 580px;
+      margin-bottom: 28px;
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 5px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+    .stage {
+      width: 100%;
+      max-width: 580px;
+      position: relative;
+      min-height: 320px;
+    }
+    .question-card {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 28px 28px;
+      width: 100%;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      animation: fadeIn 0.35s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .q-number {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    .q-statement {
+      font-size: 16px;
+      line-height: 1.65;
+      margin-bottom: 22px;
+      color: var(--text);
+    }
+    .q-statement em {
+      color: #b06000;
+      font-style: normal;
+      font-weight: 600;
+      background: #fff4e0;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .option-btn {
+      background: #ededf4;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 14.5px;
+      padding: 12px 18px;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.18s, border-color 0.18s, transform 0.1s;
+    }
+    .option-btn:hover:not(:disabled) {
+      background: #e0d6f9;
+      border-color: var(--accent);
+      transform: translateX(4px);
+    }
+    .option-btn:disabled { cursor: default; }
+    .option-btn.correct {
+      background: #d4f5e2;
+      border-color: var(--correct);
+      color: #1a6b3c;
+      font-weight: 600;
+    }
+    .option-btn.wrong {
+      background: #fde8e8;
+      border-color: var(--wrong);
+      color: #922;
+      text-decoration: line-through;
+    }
+    .feedback {
+      margin-top: 16px;
+      font-size: 13.5px;
+      line-height: 1.6;
+      padding: 12px 16px;
+      border-radius: 8px;
+      display: none;
+    }
+    .feedback.show { display: block; }
+    .feedback.correct-fb { background: #d4f5e2; color: #1a6b3c; border-left: 3px solid var(--correct); }
+    .feedback.wrong-fb   { background: #fde8e8; color: #8b1a1a; border-left: 3px solid var(--wrong); }
+    .next-btn {
+      margin-top: 20px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 28px;
+      font-size: 15px;
+      font-family: 'Source Sans 3', sans-serif;
+      cursor: pointer;
+      display: none;
+      transition: opacity 0.2s, transform 0.1s;
+      font-weight: 600;
+    }
+    .next-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+    .next-btn.show { display: inline-block; }
+    .score-panel {
+      display: none;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 44px 28px;
+      text-align: center;
+      width: 100%;
+      max-width: 580px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      animation: fadeIn 0.4s ease;
+    }
+    .score-panel.show { display: block; }
+    .score-panel h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .score-number {
+      font-size: 58px;
+      font-weight: 700;
+      color: var(--gold);
+      margin: 8px 0;
+      line-height: 1;
+    }
+    .score-panel p { color: var(--muted); font-size: 15px; margin-top: 10px; line-height: 1.6; }
+    .retry-btn {
+      margin-top: 24px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 36px;
+      font-size: 15px;
+      font-family: 'Source Sans 3', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .retry-btn:hover { opacity: 0.88; }
+  </style>
+</head>
+<body>
+ 
+<header>
+  <h1>Spot the Mistake</h1>
+  <p>Listen to the audio and choose the correct information to replace each wrong detail.</p>
+</header>
+ 
+<div class="progress-wrap">
+  <div class="progress-meta">
+    <span id="q-counter">Question 1 of 8</span>
+    <span id="score-counter">Score: 0</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+</div>
+ 
+<div class="stage" id="stage"></div>
+<div class="score-panel" id="score-panel">
+  <h2>Quiz complete!</h2>
+  <div class="score-number" id="score-display"></div>
+  <p id="score-msg"></p>
+  <button class="retry-btn" onclick="restart()">Try again</button>
+</div>
+ 
+<script>
+const questions = [
+  {
+    statement: 'In the audio, it says Frank Abagnale was <em>English</em>. What is correct?',
+    options: ['He was Australian.', 'He was American.', 'He was Canadian.'],
+    correct: 1,
+    feedback: 'Frank Abagnale was American, not English.'
+  },
+  {
+    statement: 'The audio says he tricked his way to <em>$250 million</em>. What is the real figure?',
+    options: ['$25 million', '$2.5 million', '$250 thousand'],
+    correct: 1,
+    feedback: 'He cheated his way to $2.5 million, not $250 million.'
+  },
+  {
+    statement: 'According to the audio, he was wanted in twenty-six <em>cities</em>. What is correct?',
+    options: ['Twenty-six countries.', 'Twenty-six states.', 'Twenty-six airports.'],
+    correct: 0,
+    feedback: 'He was wanted in twenty-six countries, not cities.'
+  },
+  {
+    statement: 'The audio claims his mother was <em>German</em>. What nationality was she?',
+    options: ['Italian', 'Spanish', 'French'],
+    correct: 2,
+    feedback: 'His mother was French, not German.'
+  },
+  {
+    statement: 'In the audio, he says his uniform was <em>stolen</em>. What did he really say?',
+    options: ['That it was lost.', 'That it was damaged.', 'That it was left on a plane.'],
+    correct: 0,
+    feedback: 'He said his uniform was lost, not stolen.'
+  },
+  {
+    statement: 'The audio says he pretended to be a <em>footballer</em>. What did he really pretend to be?',
+    options: ['A lawyer', 'A doctor', 'A professor'],
+    correct: 1,
+    feedback: 'He pretended to be a doctor, not a footballer.'
+  },
+  {
+    statement: 'According to the audio, he went to prison in <em>Italy</em>. Where did he actually go to prison?',
+    options: ['Spain', 'France', 'Sweden'],
+    correct: 1,
+    feedback: 'He went to prison in France, not Italy.'
+  },
+  {
+    statement: 'The audio says he now advises companies on <em>how to cheat their customers</em>. What does he really do?',
+    options: ['He advises on marketing strategies.', 'He advises on legal matters.', 'He advises companies on security.'],
+    correct: 2,
+    feedback: 'He advises companies on security, not on how to cheat their customers.'
+  }
+];
+ 
+let current = 0;
+let score = 0;
+ 
+function render() {
+  const stage = document.getElementById('stage');
+  const q = questions[current];
+ 
+  document.getElementById('q-counter').textContent = `Question ${current + 1} of ${questions.length}`;
+  document.getElementById('score-counter').textContent = `Score: ${score}`;
+  document.getElementById('progress').style.width = (current / questions.length * 100) + '%';
+ 
+  stage.innerHTML = `
+    <div class="question-card">
+      <div class="q-number">Question ${current + 1} of ${questions.length}</div>
+      <div class="q-statement">${q.statement}</div>
+      <div class="options" id="opts">
+        ${q.options.map((o, j) => `<button class="option-btn" onclick="answer(${j})">${o}</button>`).join('')}
+      </div>
+      <div class="feedback" id="fb"></div>
+      <button class="next-btn" id="next-btn" onclick="next()">
+        ${current < questions.length - 1 ? 'Next question →' : 'See my results'}
+      </button>
+    </div>
+  `;
+}
+ 
+function answer(choice) {
+  const q = questions[current];
+  const opts = document.querySelectorAll('.option-btn');
+  const fb = document.getElementById('fb');
+  const nextBtn = document.getElementById('next-btn');
+ 
+  opts.forEach(b => b.disabled = true);
+ 
+  if (choice === q.correct) {
+    opts[choice].classList.add('correct');
+    fb.className = 'feedback correct-fb show';
+    fb.textContent = '✓ Correct! ' + q.feedback;
+    score++;
+  } else {
+    opts[choice].classList.add('wrong');
+    opts[q.correct].classList.add('correct');
+    fb.className = 'feedback wrong-fb show';
+    fb.textContent = '✗ Not quite. ' + q.feedback;
+  }
+ 
+  document.getElementById('score-counter').textContent = `Score: ${score}`;
+  nextBtn.classList.add('show');
+}
+ 
+function next() {
+  current++;
+  if (current < questions.length) {
+    render();
+  } else {
+    showScore();
+  }
+}
+ 
+function showScore() {
+  document.getElementById('stage').innerHTML = '';
+  document.getElementById('progress').style.width = '100%';
+  document.getElementById('q-counter').textContent = 'Finished!';
+ 
+  const pct = Math.round(score / questions.length * 100);
+  document.getElementById('score-display').textContent = score + ' / ' + questions.length;
+  document.getElementById('score-msg').textContent =
+    pct === 100 ? 'Perfect score! Excellent listening skills.' :
+    pct >= 75   ? 'Great job! You caught most of the mistakes.' :
+    pct >= 50   ? 'Good effort. Try listening again to catch more details.' :
+                  'Keep practising — play the audio again and try once more.';
+  document.getElementById('score-panel').classList.add('show');
+}
+ 
+function restart() {
+  current = 0;
+  score = 0;
+  document.getElementById('score-panel').classList.remove('show');
+  render();
+}
+ 
+render();
+</script>
+</body>
+</html>
